@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<canvas width="960" height="500"></canvas>
+<script src="https://d3js.org/d3.v4.min.js"></script>
+<script>
+    var canvas = document.querySelector("canvas"),
+        context = canvas.getContext("2d"),
+        width = canvas.width,
+        height = canvas.height;
+
+        const svg = d3.select('svg')
+            .attr('width', width)
+            .attr('height', height)
+    
+    var simulation = d3.forceSimulation() //初始化force
+        .force("link", d3.forceLink().id(function(d) { return d.id; })) //可以使用自己定義的node-id來指定連結而不用使用編號
+        .force("charge", d3.forceManyBody())//開始限定force運行的方式
+        .force("center", d3.forceCenter());
+
+    function getNodeColor(node) {
+        return node.level === 1 ? 'red' : 'gray'
+}
+
+
+
+</script>
