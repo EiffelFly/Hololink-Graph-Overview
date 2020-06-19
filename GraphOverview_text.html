@@ -1,26 +1,111 @@
 <!DOCTYPE html>
 <meta charset="utf-8">
-<canvas width="960" height="500"></canvas>
+<svg width="960" height="600"></svg>
 <script src="https://d3js.org/d3.v4.min.js"></script>
-<script>
-    var canvas = document.querySelector("canvas"),
-        context = canvas.getContext("2d"),
-        width = canvas.width,
-        height = canvas.height;
+<style>
 
-        const svg = d3.select('svg')
-            .attr('width', width)
-            .attr('height', height)
+    .links line {
+      stroke :#999;
+    }
+    
+    .nodes circle {
+      pointer-events: all;
+      stroke-width: 0px;
+      stroke:none;
+    }
+    
+    svg {
+        background-color: #333;
+    }
+
+</style>
+<script>
+    var svg = d3.select("svg"),
+        width = +svg.attr("width"),
+        height = +svg.attr("height");
     
     var simulation = d3.forceSimulation() //初始化force
         .force("link", d3.forceLink().id(function(d) { return d.id; })) //可以使用自己定義的node-id來指定連結而不用使用編號
         .force("charge", d3.forceManyBody())//開始限定force運行的方式
-        .force("center", d3.forceCenter());
+        .force("center", d3.forceCenter(width / 2, height / 2));
 
     function getNodeColor(node) {
-        return node.level === 1 ? 'red' : 'gray'
-}
+        if (node.level == "1"){return '#00b4d8'}
+        else if (node.level == "0") {return '#FFFFFF'}
+        else {return '#FCA311'}
+    }
+    function getNodeSize(node){
+        if (node.connection < 5){
+            return node.connection*2
+        }
+        else{
+            return node.connection
+        }
+    }
 
+    d3.json('gotest.json', function(error,graph){
+        console.log(graph)
+        if (error) {
+            console.log(error);
+        }
+
+        var link = svg.append("g")
+            .attr("class", "links")
+            .selectAll("line")
+            .data(graph.links)
+            .enter().append("line");
+
+        var node = svg.append("g")
+            .attr("class", "nodes")
+            .selectAll("circle")
+            .data(graph.nodes)
+            .enter().append("circle")
+                .attr("r", getNodeSize)
+                .attr('fill', getNodeColor)
+                .call(d3.drag()
+                    .on("start", dragstarted)
+                    .on("drag", dragged)
+                    .on("end", dragended));
+
+        node.append("title")
+            .text(function(d) { return d.id; });
+
+        simulation
+            .nodes(graph.nodes)
+            .on("tick", ticked);
+        
+        simulation.force("link")
+            .links(graph.links);
+
+        function ticked() {
+            link
+                .attr("x1", function(d) { return d.source.x; })
+                .attr("y1", function(d) { return d.source.y; })
+                .attr("x2", function(d) { return d.target.x; })
+                .attr("y2", function(d) { return d.target.y; });
+
+            node
+                .attr("cx", function(d) { return d.x; })
+                .attr("cy", function(d) { return d.y; });
+        };
+    });
+    
+    function dragstarted(d) {
+        if (!d3.event.active) simulation.alphaTarget(0.3).restart();
+        d.fx = d.x;
+        d.fy = d.y;
+    }
+
+    function dragged(d) {
+        d.fx = d3.event.x;
+        d.fy = d3.event.y;
+    }
+
+    function dragended(d) {
+        if (!d3.event.active) simulation.alphaTarget(0);
+        d.fx = null;
+        d.fy = null;
+    }
 
 
 </script>
