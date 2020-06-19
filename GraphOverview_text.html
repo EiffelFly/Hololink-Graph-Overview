@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <meta charset="utf-8">
-<svg width="960" height="600"></svg>
+<svg width="960" height="960"></svg>
 <script src="https://d3js.org/d3.v4.min.js"></script>
 <style>
 
@@ -26,24 +26,24 @@
     
     var simulation = d3.forceSimulation() //初始化force
         .force("link", d3.forceLink().id(function(d) { return d.id; })) //可以使用自己定義的node-id來指定連結而不用使用編號
-        .force("charge", d3.forceManyBody())//開始限定force運行的方式
+        .force("charge", d3.forceManyBody().strength(-80))//開始限定force運行的方式
         .force("center", d3.forceCenter(width / 2, height / 2));
 
     function getNodeColor(node) {
-        if (node.level == "1"){return '#00b4d8'}
-        else if (node.level == "0") {return '#FFFFFF'}
-        else {return '#FCA311'}
+        if (node.level == "tag"){return'#FCA311'}
+        else if (node.level == "article") {return '#FFFFFF'}
+        else {return '#00b4d8'}
     }
     function getNodeSize(node){
-        if (node.connection < 5){
-            return node.connection*2
+        if (node.connection){
+            return node.connection*3
         }
-        else{
-            return node.connection
+        else if (node.tagAmount){
+            return node.tagAmount/4
         }
     }
 
-    d3.json('gotest.json', function(error,graph){
+    d3.json('China_India.json', function(error,graph){
         console.log(graph)
         if (error) {
             console.log(error);
@@ -67,6 +67,7 @@
                     .on("drag", dragged)
                     .on("end", dragended));
 
+        //讓滑鼠指向的 node 會浮現出它的 title
         node.append("title")
             .text(function(d) { return d.id; });
 
