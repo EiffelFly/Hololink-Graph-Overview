@@ -27,13 +27,22 @@
 
     var simulation = d3.forceSimulation() //初始化force
         .force("link", d3.forceLink().id(function(d) { return d.id; })) //可以使用自己定義的node-id來指定連結而不用使用編號
-        .force("charge", d3.forceManyBody().strength(-100))//開始限定force運行的方式
-        .force("radial", d3.forceRadial()
-            .radius(function(d){
-                if(d.level == 'tag'){return d.connection*100}
-                else {return 50}
-            },width/2, height/2)
-            .strength(1)
+        //.force("charge", d3.forceManyBody().strength(-100))//開始限定force運行的方式
+        .force("r", d3.forceRadial(function(d){
+            console.log(d.level)
+            for (var i=0; i<d.level.length; i++){
+                if(d.level[i] == "tag"){
+                    return 60
+                    console.log('fuck')
+                }
+                else if (d.level[i] == 'article'){
+                    return 100
+                }
+                else if (d.level[i] == 'media'){
+                    return 50
+                }}
+        }, width/2, height/2).strength(1))
+            
             /*
             .strength(function(d){
                 if (d.level == 'article'){return 1}
@@ -41,9 +50,9 @@
                 else if(d.level == 'tag' && d.connection == 1){return 1}
                 else {return 0}
             })*/
-        )
-        .force("center", d3.forceCenter(width / 2, height / 2))
-        .force('collision', d3.forceCollide(20));
+        
+        //.force("center", d3.forceCenter(width / 2, height / 2))
+        .force('collision', d3.forceCollide(11));
 
     function getNodeColor(node) {
         if (node.level == "tag"){return'#FCA311'}
@@ -103,7 +112,7 @@
             .selectAll("circle")
             .data(graph.nodes)
             .enter().append("circle")
-                .attr("r", getNodeSize)
+                .attr("r", 5)
                 .attr('fill', getNodeColor)
                 .call(d3.drag()
                     .on("start", dragstarted)
@@ -119,7 +128,7 @@
                 .attr('text-anchor', getNodeTextPosition)
                 .attr('dx', getTextDx)
                 .attr('dy', getTextDy)
-                .attr('font-size', getTextFontSize)
+                .attr('font-size', 2)
                 .style('fill', getTextColor)
 
     
@@ -131,8 +140,8 @@
             .nodes(graph.nodes)
             .on("tick", ticked);
         
-        simulation.force("link")
-            .links(graph.links);
+        //simulation.force("link")
+        //    .links(graph.links);
 
         function ticked() {
             linkElements
