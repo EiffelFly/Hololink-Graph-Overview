@@ -1,3 +1,8 @@
+＃20200624
+1. 啟用 Radial 成功：的確是昨日發現的 bug 導致
+2. 新問題，大概是因為文章數量太少，導致圖形都聚集在某個角落
+3. 使用 forceManyBody().strength 來讓 node 散得更接近圓形，加上一點點 forceCollide 來讓 node 不要重疊
+
 #20200623
 1. 研究 forceRadial -> 發現問題（d.level if 判斷式進不去）
 ```javascript
