@@ -37,6 +37,7 @@
             .call(d3.zoom().on("zoom", function () {
                 svg.attr("transform", d3.event.transform)
             }))
+            .append('g')
 
     var width = 1500
         height = 1500;
