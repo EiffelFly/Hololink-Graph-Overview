@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <meta charset="utf-8">
-<svg width="1500" height="1500"></svg>
+<body>
+    <div id='graph_overview'></div>
+</body>
 <script src="https://d3js.org/d3.v4.min.js"></script>
 <style>
 
@@ -14,16 +16,30 @@
       stroke:none;
     }
     
-    svg {
+    div {
         background-color: #333;
+        width: 1500px;
+        height: 1500px;
+        position: fixed;
+    }
+
+    body {
+        position: fixed;
     }
 
 </style>
 <script>
     
-    var svg = d3.select("svg")
-    var width = +svg.attr("width"),
-        height = +svg.attr("height");
+    var svg = d3.select("#graph_overview")
+        .append('svg')
+            .attr("width", '1500px')
+            .attr('height', '1500px')
+            .call(d3.zoom().on("zoom", function () {
+                svg.attr("transform", d3.event.transform)
+            }))
+
+    var width = 1500
+        height = 1500;
 
     var simulation = d3.forceSimulation() //初始化force
         .force("link", d3.forceLink().id(function(d) { return d.id; })) //可以使用自己定義的node-id來指定連結而不用使用編號
