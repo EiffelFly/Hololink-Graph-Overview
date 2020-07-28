@@ -46,7 +46,7 @@ for i,j,k,z in zip(data['title'], data['media'], data['url'],data['tags']):
 
         linkjson.append({"source":f"{i}", "target":f"{tag}"})
 
-    #計算 media public 數量
+    #計算 media publish 數量
     for node in nodejson:
         try:
             if node['level'] == "media" and node['id'] == j:
