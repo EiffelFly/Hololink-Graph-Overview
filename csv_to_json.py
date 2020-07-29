@@ -7,7 +7,7 @@ nodevalidator = []
 linkjson = []
 linkvalidator = []
 
-data = pd.read_csv('Hololink_Tags_chinaIndia.csv')
+data = pd.read_csv('Hololink_chinaindia.csv')
 
 for i,j,k,z in zip(data['title'], data['media'], data['url'],data['tags']):
 
@@ -44,26 +44,33 @@ for i,j,k,z in zip(data['title'], data['media'], data['url'],data['tags']):
 
 
 
-        linkjson.append({"source":f"{i}", "target":f"{tag}"})
+        linkjson.append({"source":f"{i}", "target":f"{tag}", "countLinksTargetOwn":""})
 
-    #計算 media public 數量
+    #計算 media publish 數量
     for node in nodejson:
         try:
             if node['level'] == "media" and node['id'] == j:
                 node["publish"] += 1
             if node['id'] == i:
                 node["tagAmount"] = tagAmount
+
+            
         except:
             pass
 
-    
-
-
+#Count Amount of Links the target node own and put it into links
+for link in linkjson:
+    targettag = link['target']
+    for node in nodejson:
+        if node['level'] == "tag":
+            if node['id'] == targettag:
+                link['countLinksTargetOwn'] = node['connection']
+                
 dataJson = {
     "nodes":nodejson,
     "links":linkjson
 }
 
 exportJson = json.dumps(dataJson,ensure_ascii=False)
-with open('China_India.json', 'w', encoding='utf-8') as file:
+with open('China_India_test2.json', 'w', encoding='utf-8') as file:
     file.write(exportJson)
