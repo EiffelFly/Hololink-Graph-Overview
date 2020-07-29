@@ -7,7 +7,7 @@ nodevalidator = []
 linkjson = []
 linkvalidator = []
 
-data = pd.read_csv('Hololink_Tags_chinaIndia.csv')
+data = pd.read_csv('Hololink_chinaindia.csv')
 
 for i,j,k,z in zip(data['title'], data['media'], data['url'],data['tags']):
 
@@ -72,5 +72,5 @@ dataJson = {
 }
 
 exportJson = json.dumps(dataJson,ensure_ascii=False)
-with open('China_India_test.json', 'w', encoding='utf-8') as file:
+with open('China_India_test2.json', 'w', encoding='utf-8') as file:
     file.write(exportJson)
