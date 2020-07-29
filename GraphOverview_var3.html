@@ -1,58 +1,120 @@
 <!DOCTYPE html>
 <meta charset="utf-8">
 <style>
-    .links line {
-        stroke: #999;
-        stroke-opacity: 0.6;
-    }
 
-    .nodes circle {
-        stroke: #fff;
-        stroke-width: 1.5px;
-    }
 </style>
 
 <svg width="960" height="960"></svg>
 <script src="https://d3js.org/d3.v4.min.js"></script>
 <script>
 
+    //First step: prepare svg and add encompassing group-g for the zoom 
     var svg = d3.select("svg"),
         width = +svg.attr("width"),
         height = +svg.attr("height");
     
+    var g = svg.append("g")
+        .attr("class", "everything");
+
+    //Second step: set up simulation and force
     var simulation = d3.forceSimulation()
-        .force("charge_force", d3.forceManyBody())
+        .force("charge_force", d3.forceManyBody().strength(-450))
         .force("center_force", d3.forceCenter(width / 2, height / 2))
         .force("link", d3.forceLink().id(function(d){return d.id}));
 
-    simulation.on("tick", tickActions);
-
+    //Third step: LOAD DATA and create nodes/links element
 
     d3.json('China_India.json', function(error,graph){
         if (error) {
             console.log(error);
         }
-        var linkElements = svg.append("g")
+
+        var linkElements = g.append("g")
                 .attr("class", "links")
             .selectAll("line") //select svg-line element and use D3.data method
-            .data(graph.links)
-            .enter()
+                .data(graph.links)
+                .enter()
                 .append("line")
+                    .attr("stroke-width", 1)
+                    .style("stroke", getLinkColor);  
+
+        var nodeElements = g.append("g")
+                .attr("class", "nodes")         
+            .selectAll("circle")
+                .data(graph.nodes)
+                .enter()
+                .append("circle")
+                .attr("r", 4)
+                .attr("fill", getNodeColor)
+
+        //Fourth step: activate simulation and tick
+        simulation
+            .nodes(graph.nodes)
+            .on("tick", tickActions);
+
+        simulation.force("link")
+            .links(graph.links)
+
+        //Fifth step: add drag capability
+        var drag_handler = d3.drag()
+            .on("start", drag_start)
+            .on("drag", drag_drag)
+            .on("end", drag_end);	
+
+        drag_handler(nodeElements);
             
+        function tickActions(){
+            linkElements
+                .attr("x1", function(d) { return d.source.x; })
+                .attr("y1", function(d) { return d.source.y; })
+                .attr("x2", function(d) { return d.target.x; })
+                .attr("y2", function(d) { return d.target.y; });
+
+            nodeElements
+                .attr("cx", function(d) { return d.x; })
+                .attr("cy", function(d) { return d.y; });
+        }
+    });
+
+    //Sixth step: add zoom capability
+    var zoom_handler = d3.zoom()
+        .on("zoom", zoom_actions);
+
+    zoom_handler(svg);
+
+    //FUNCTIONS
+
+    function getLinkColor(node){
+        return "grey"
     }
 
-
-    function tickActions(){
-        linkElements
-            .attr("x1", function(d) { return d.source.x; })
-            .attr("y1", function(d) { return d.source.y; })
-            .attr("x2", function(d) { return d.target.x; })
-            .attr("y2", function(d) { return d.target.y; });
-
-        nodeElements
-            .attr("cx", function(d) { return d.x; })
-            .attr("cy", function(d) { return d.y; });
+    function getNodeColor(node){
+        if (node.level == "tag") {return'#FCA311'}
+        else if (node.level == "article") {return '#FFFFFF'}
+        else {return '#00b4d8'}
     }
 
+    //DRAG FUNCTION
+    function drag_start(d) {
+        if (!d3.event.active) simulation.alphaTarget(0.3).restart();
+        d.fx = d.x;
+        d.fy = d.y;
+    }
 
+    //make sure you can't drag the circle outside the box
+    function drag_drag(d) {
+        d.fx = d3.event.x;
+        d.fy = d3.event.y;
+    }
+
+    function drag_end(d) {
+        if (!d3.event.active) simulation.alphaTarget(0);
+        d.fx = d.x; //sticky node
+        d.fy = d.y; //sticky node
+    }
+
+    //ZOOM FUNCTION
+    function zoom_actions(){
+        g.attr("transform", d3.event.transform)
+    }
 </script>
