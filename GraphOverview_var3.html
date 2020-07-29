@@ -22,8 +22,10 @@
         .force("center_force", d3.forceCenter(width / 2, height / 2))
         .force("link", d3.forceLink()
             .id(function(d){return d.id})
-            .distance(linkdist)
-        );
+            .distance(10))
+        .force('Radial_force', d3.forceRadial(getNodeRadius, width/2, height/2)
+            .strength(getNodeRadiusStrength)
+        )
         
 
     //Third step: LOAD DATA and create nodes/links element
@@ -90,6 +92,33 @@
     zoom_handler(svg);
 
     //FUNCTIONS
+
+    function getNodeRadiusStrength(d){
+        if (d.level == 'tag' && d.connection>=2){
+            return 1
+        }
+        else if (d.level == 'tag' && d.connection<2){
+            return 1
+        }
+        else if (d.level == 'article'){
+            return 1
+        }
+        else { return 1}
+    }
+
+    function getNodeRadius(d){
+        if (d.level == 'tag' && d.connection>=2){
+            return 0
+        }
+        else if (d.level == 'tag' && d.connection<2){
+            return 700
+        }
+        else if (d.level == 'article'){
+            return 500
+        }
+        else { return 800}
+    }
+
 
     function linkdist(d){
         if (d.countLinksTargetOwn > 1){
