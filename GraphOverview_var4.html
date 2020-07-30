@@ -19,6 +19,8 @@
 
     var biggestNode = 0
     var biggestTag = 0
+    var nodeBiggestRadius = 70
+    var nodeSmallestRadius = 2
     
 
     //Second step: set up simulation and force
@@ -36,9 +38,7 @@
     //Third step: LOAD DATA and create nodes/links element
 
     d3.json('China_India_test2.json', function(error,graph){
-        if (error) {
-            console.log(error);
-        }
+        if (error) throw error;
 
         calculateBiggestNum()
 
@@ -87,9 +87,13 @@
                 .attr("x2", function(d) { return d.target.x; })
                 .attr("y2", function(d) { return d.target.y; });
 
+            // make node can't be dragged outside the svg
             nodeElements
-                .attr("cx", function(d) { return d.x; })
-                .attr("cy", function(d) { return d.y; });
+                //.attr("cx", function(d) { return d.x; })
+                //.attr("cy", function(d) { return d.y; });
+                //this will make quite interesting graph
+                .attr("cx", function(d) { return d.x = Math.max(15, Math.min(width - 15, d.x)); })
+                .attr("cy", function(d) { return d.y = Math.max(15, Math.min(height - 15, d.y)); });
         }
 
         //calculate biggest Num
