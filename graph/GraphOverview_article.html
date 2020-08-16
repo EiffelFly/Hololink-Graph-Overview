@@ -5,7 +5,6 @@
 </style>
 <body>
     <svg width="960" height="960"></svg>
-
 </body>
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@900&display=swap" rel="stylesheet">
 
@@ -30,7 +29,7 @@
     var simulation = d3.forceSimulation()
         .force("x", d3.forceX(width / 2))
         .force("y", d3.forceY(height / 2))
-        .force('charge', d3.forceManyBody().strength(5))
+        .force('charge', d3.forceManyBody().strength(20))
         .force("center_force", d3.forceCenter(width / 2, height / 2))
         .force(
             "collision",
@@ -75,10 +74,25 @@
                         .append('text')
                         .text(node => node.title)
                         .attr('text-anchor', 'middle')
-                        .attr('font-family', 'Noto Sans TC, sans-serif;')
+                        //.attr('font-family', "'Noto Sans TC', sans-serif")
+                        .attr('font-weight', getTextFontWeight)
                         .attr('dx', 0)
-                        .attr('dy', '0.35rem')
+                        .attr('dy', getTextDy)
                         .attr('font-size', getTextFontSize)
+                        .style('fill', 'black')
+
+        var NERtestElements = g.append("g")
+            .attr("class", "text")
+                .selectAll("text")
+                    .data(graph.nodes)
+                        .enter()
+                        .append('text')
+                        .text(node => node.type)
+                        .attr('text-anchor', 'middle')
+                        .attr('font-weight', getTextFontWeight)
+                        .attr('dx', 0)
+                        .attr('dy', getNERTextDy)
+                        .attr('font-size', getNERTextFontSize)
                         .style('fill', 'black')
 
         nodeElements.append("title")
@@ -118,6 +132,10 @@
                 .attr("cy", function(d) { return d.y; });
 
             testElements
+                .attr("x", node => node.x)
+                .attr("y", node => node.y);
+
+            NERtestElements
                 .attr("x", node => node.x)
                 .attr("y", node => node.y);
         }
@@ -168,9 +186,52 @@
         else if (node.group == "stellar") {return '#FFFFFF'}
     }
 
+    //Set up scale for Text and NERText Dy
+    var textDyScale = d3.scalePow()
+            .exponent(2)
+            .range([0, 4])
+            .domain([0, biggestNode]);
+
+    function getTextDy(node){
+        if (node.frequency/biggestNode > 0.7){
+            textdy = textDyScale(node.frequency)
+            return `${textdy}rem`
+        }
+        else if ( 0.8 > node.frequency/biggestNode > 0.5){
+            return '-0.5rem'
+        }
+        
+    }
+
+    function getNERTextDy(node){
+        if (node.frequency/biggestNode > 0.7){
+            return '1.5rem'
+        }
+        else if ( 0.8 > node.frequency/biggestNode > 0.5){
+            return '0.5rem'
+        }
+    }
+
     function getTextFontSize(node){
         var interpolator = d3.interpolateNumber(7,50);
         return interpolator(node.frequency/biggestNode)
+    }
+
+    function getNERTextFontSize(node){
+        var interpolator = d3.interpolateNumber(7,30);
+        return interpolator(node.frequency/biggestNode)
+    }
+
+    function getTextFontWeight(node){
+        if (node.frequency/biggestNode > 0.8){
+            return 900
+        }
+        else if ( 0.8 > node.frequency/biggestNode > 0.5){
+            return 700
+        }
+        else if (node.frequency/biggestNode < 0.5){
+            return 3000
+        }
     }
 
     //DRAG FUNCTION
