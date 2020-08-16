@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+
+</style>
+<body>
+    <svg width="960" height="960"></svg>
+</body>
+<script src="https://d3js.org/d3.v4.min.js"></script>
+<script src="https://d3js.org/d3-interpolate.v1.min.js"></script>
+<script>
+
+    //First step: prepare svg and add encompassing group-g for the zoom 
+    var svg = d3.select("svg"),
+        width = +svg.attr("width"),
+        height = +svg.attr("height");
+    
+    var g = svg.append("g")
+        .attr("class", "everything");
+
+    var biggestNode = 0
+
+    //Second step: set up simulation and force
+    // In this diagram we want to center the big node 
+    // forceX and forceY will do the job but they will force the node like backslash so we need to put another center force
+    var simulation = d3.forceSimulation()
+        .force("x", d3.forceX(width / 2))
+        .force("y", d3.forceY(height / 2))
+        .force('charge', d3.forceManyBody().strength(5))
+        .force("center_force", d3.forceCenter(width / 2, height / 2))
+        .force(
+            "collision",
+            d3
+                .forceCollide()
+                .radius(function(d){
+                    radius = getNodeSize(d)
+                    return radius + 2
+                })
+                .strength(1)
+        );
+    
+    //Third step: LOAD DATA and create node elements
+    d3.json('test_data1.json', function(error,graph){
+        if (error) throw error;
+
+        calculateBiggestNum()
+
+        var strengthScale = d3.scalePow()
+            .exponent(2)
+            .range([0, 0.5])
+            .domain([0, d3.max(graph.nodes, function(d) {
+                return d.frequency;
+            })]);
+
+        var nodeElements = g.append("g")
+            .attr("class", "nodes")         
+                .selectAll("circle")
+                    .data(graph.nodes)
+                    .enter()
+                    .append("circle")
+                    .attr("r", getNodeSize)
+                    .attr("fill", getNodeColor)
+                    .style("stroke", "grey")
+                .on('mouseover.fade', fade(0.5))
+                .on('mouseout.fade', fade(1));
+
+        nodeElements.append("title")
+            .text(function(d) { return d.title; });
+
+        // Re-define x,y force strength to make bigger node at center
+        // And besides that, we make basestone at center and basestone at outer ring
+        var XForce = simulation.force("x");
+        var YForce = simulation.force("y");
+
+        XForce.strength(function(d){
+            if (d.group == "basestone"){
+                return strengthScale(d.frequency) + 0.4
+            }
+            else { 
+                return strengthScale(d.frequency) 
+            }   
+        });
+
+        YForce.strength(function(d){
+            if (d.group == "basestone"){
+                return strengthScale(d.frequency) + 0.4
+            }
+            else { 
+                return strengthScale(d.frequency) 
+            }
+        });
+
+        //Fourth step: activate simulation and tick function
+        simulation
+            .nodes(graph.nodes)
+            .on("tick", tickActions);
+
+        function tickActions(){
+            nodeElements
+                .attr("cx", function(d) { return d.x; })
+                .attr("cy", function(d) { return d.y; });
+        }
+
+        //Fifth step: add drag capability
+        var drag_handler = d3.drag()
+            .on("start", drag_start)
+            .on("drag", drag_drag)
+            .on("end", drag_end);	
+
+        drag_handler(nodeElements);
+            
+        //Sixth step: add fade function
+        function fade(opacity){
+            return d => {
+                nodeElements.style('opacity', function (o) { 
+                    if (d==o){ return 1}
+                    else {return opacity}
+                });
+            };
+        };
+
+        function calculateBiggestNum(){
+            graph.nodes.forEach(function(obj){    
+                if (obj.frequency > biggestNode){
+                    biggestNode = obj.frequency
+                }   
+            });    
+        };
+
+        console.log(biggestNode)
+
+    });
+
+    var zoom_handler = d3.zoom()
+        .on("zoom", zoom_actions);
+
+    zoom_handler(svg);
+
+    //FUNCTION
+    function getNodeSize(d){
+        var interpolator = d3.interpolateNumber(20,150);
+        return interpolator(d.frequency/biggestNode)
+    }
+
+    function getNodeColor(node){
+        if (node.group == "basestone") {return'#FCA311'}
+        else if (node.group == "stellar") {return '#FFFFFF'}
+    }
+
+    //DRAG FUNCTION
+    function drag_start(d) {
+        if (!d3.event.active) simulation.alphaTarget(0.3).restart();
+        d.fx = d.x;
+        d.fy = d.y;
+    }
+
+    //make sure you can't drag the circle outside the box
+    function drag_drag(d) {
+        d.fx = d3.event.x;
+        d.fy = d3.event.y;
+    }
+
+    function drag_end(d) {
+        if (!d3.event.active) simulation.alphaTarget(0);
+        d.fx = d.x; //sticky node
+        d.fy = d.y; //sticky node
+    }
+
+    //ZOOM FUNCTION
+    function zoom_actions(){
+        g.attr("transform", d3.event.transform)
+    }
+
+</script>

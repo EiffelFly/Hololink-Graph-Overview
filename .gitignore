@@ -1,1 +1,6 @@
 /node_modules
+
+Lib/
+Scripts/
+Include/
+pyvenv.cfg
