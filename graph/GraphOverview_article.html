@@ -5,7 +5,11 @@
 </style>
 <body>
     <svg width="960" height="960"></svg>
+
 </body>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@900&display=swap" rel="stylesheet">
+
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap"rel="stylesheet">
 <script src="https://d3js.org/d3.v4.min.js"></script>
 <script src="https://d3js.org/d3-interpolate.v1.min.js"></script>
 <script>
@@ -45,6 +49,7 @@
 
         calculateBiggestNum()
 
+        //Set up scale for forceX an Y
         var strengthScale = d3.scalePow()
             .exponent(2)
             .range([0, 0.5])
@@ -61,8 +66,20 @@
                     .attr("r", getNodeSize)
                     .attr("fill", getNodeColor)
                     .style("stroke", "grey")
-                .on('mouseover.fade', fade(0.5))
-                .on('mouseout.fade', fade(1));
+
+        var testElements = g.append("g")
+            .attr("class", "text")
+                .selectAll("text")
+                    .data(graph.nodes)
+                        .enter()
+                        .append('text')
+                        .text(node => node.title)
+                        .attr('text-anchor', 'middle')
+                        .attr('font-family', 'Noto Sans TC, sans-serif;')
+                        .attr('dx', 0)
+                        .attr('dy', '0.35rem')
+                        .attr('font-size', getTextFontSize)
+                        .style('fill', 'black')
 
         nodeElements.append("title")
             .text(function(d) { return d.title; });
@@ -99,6 +116,10 @@
             nodeElements
                 .attr("cx", function(d) { return d.x; })
                 .attr("cy", function(d) { return d.y; });
+
+            testElements
+                .attr("x", node => node.x)
+                .attr("y", node => node.y);
         }
 
         //Fifth step: add drag capability
@@ -137,14 +158,19 @@
     zoom_handler(svg);
 
     //FUNCTION
-    function getNodeSize(d){
+    function getNodeSize(node){
         var interpolator = d3.interpolateNumber(20,150);
-        return interpolator(d.frequency/biggestNode)
+        return interpolator(node.frequency/biggestNode)
     }
 
     function getNodeColor(node){
         if (node.group == "basestone") {return'#FCA311'}
         else if (node.group == "stellar") {return '#FFFFFF'}
+    }
+
+    function getTextFontSize(node){
+        var interpolator = d3.interpolateNumber(7,50);
+        return interpolator(node.frequency/biggestNode)
     }
 
     //DRAG FUNCTION
