@@ -87,7 +87,11 @@
                     .data(graph.nodes)
                         .enter()
                         .append('text')
-                        .text(node => node.type)
+                        .text(node => {
+                            if (node.group == 'basestone'){
+                                return node.type
+                            }
+                        })
                         .attr('text-anchor', 'middle')
                         .attr('font-weight', getTextFontWeight)
                         .attr('dx', 0)
@@ -189,27 +193,29 @@
     //Set up scale for Text and NERText Dy
     var textDyScale = d3.scalePow()
             .exponent(2)
-            .range([0, 4])
-            .domain([0, biggestNode]);
+            .range([0.5, 2])
+            
 
     function getTextDy(node){
-        if (node.frequency/biggestNode > 0.7){
-            textdy = textDyScale(node.frequency)
-            return `${textdy}rem`
+        if (node.group == 'basestone'){
+            
+            textDyScale.domain([0, biggestNode])
+            textdy = textDyScale(node.frequency);
+            textdy = textdy;
+            return `-${textdy}rem`;
         }
-        else if ( 0.8 > node.frequency/biggestNode > 0.5){
-            return '-0.5rem'
+           
+        else if (node.group == 'stellar'){
+            return '0.35rem';
         }
-        
     }
 
     function getNERTextDy(node){
-        if (node.frequency/biggestNode > 0.7){
-            return '1.5rem'
-        }
-        else if ( 0.8 > node.frequency/biggestNode > 0.5){
-            return '0.5rem'
-        }
+        if (node.group == 'basestone'){
+            textDyScale.domain([0, biggestNode])
+            textdy = textDyScale(node.frequency);
+            return `${textdy}rem`;          
+        } 
     }
 
     function getTextFontSize(node){
