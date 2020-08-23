@@ -4,7 +4,6 @@ nodevalidator = []
 d3node = []
 d3link = []
 
-
 with open('test_ver1.json', encoding='utf-8') as file:
     dataALL = json.load(file)
 
@@ -24,11 +23,11 @@ with open('test_ver1.json', encoding='utf-8') as file:
                 key_title = value['title']
                 key_group = value['group']
 
-                #如果它
+                #如果 keywords 同時被 NER 輸出為 stellar 和 basestone 我該如何處理
                 if key_title not in nodevalidator:
                     if key_group == "basestone":
                         d3node.append({"id":f"{key_title}", "level":"basestone", "connection":1})
-                        nodevalidator.append({f"{key_title}":"basestone"})
+                        nodevalidator.append(f"{key_title}")
                     elif key_group == "stellar":
                         d3node.append({"id":f"{key_title}", "level":"stellar", "connection":1})
                         nodevalidator.append(f"{key_title}")
@@ -36,6 +35,9 @@ with open('test_ver1.json', encoding='utf-8') as file:
                     for node in d3node:
                         if node['id'] == key_title:
                             if node['level'] == key_group:
+                                node['connection'] += 1
+                            else: #只要 basestone 和 stellar 重複出現，則都將其 level 改為 basestone
+                                node['level'] = 'basestone'
                                 node['connection'] += 1
 
                 d3link.append({"source":f"{article_title}", "target":f"{key_title}"})
