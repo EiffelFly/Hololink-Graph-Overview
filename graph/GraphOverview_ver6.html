@@ -17,8 +17,8 @@
     var g = svg.append("g")
         .attr("class", "everything");
 
-    var biggestNode = 0
-    var biggestTag = 0
+    var biggestNode_article = 0
+    var biggestNode_keyword = 0
     
 
     //Second step: set up simulation and force
@@ -75,6 +75,25 @@
             .on('mouseover.fade', fade(0.2))
   	        .on('mouseout.fade', fade(1));
 
+        var textElements = g.append("g")
+            .attr("class", "text")
+                .selectAll("text")
+                    .data(graph.nodes)
+                        .enter()
+                        .append('text')
+                        .text( node => {
+                            if (node.connection >= 2 || node.level == 'article'){
+                                return node.id
+                            }
+                        })
+                        .attr('text-anchor', 'middle')
+                        //.attr('font-family', "'Noto Sans TC', sans-serif")
+                        .attr('font-weight', getTextFontWeight)
+                        .attr('dx', 0)
+                        .attr('dy', getTextDy)
+                        .attr('font-size', getTextFontSize)
+                        .style('fill', 'black')
+
         nodeElements.append("title")
             .text(function(d) { return d.id; });
 
@@ -104,6 +123,10 @@
             nodeElements
                 .attr("cx", function(d) { return d.x; })
                 .attr("cy", function(d) { return d.y; });
+
+            textElements
+                .attr("x", node => node.x)
+                .attr("y", node => node.y);
         }
 
         //Implement FADE IN and OUT EFFECT ------------
@@ -138,8 +161,8 @@
             graph.nodes.forEach(function(obj){
                 if (obj.level == 'article'){
                     totalkeywordNum = parseInt(obj.basestoneNum) + parseInt(obj.stellarNum)
-                    if (totalkeywordNum > biggestNode){
-                        biggestNode = totalkeywordNum
+                    if (totalkeywordNum > biggestNode_article){
+                        biggestNode_article = totalkeywordNum
                     }
                 }
                 
@@ -147,8 +170,8 @@
 
             graph.nodes.forEach(function(obj){
                 if (obj.level == 'stellar' || obj.level == 'basestone'){
-                    if (obj.connection > biggestTag){
-                        biggestTag = obj.connection
+                    if (obj.connection > biggestNode_keyword){
+                        biggestNode_keyword = obj.connection
                     }
                 }
             });     
@@ -211,32 +234,46 @@
             .range([0.5, 2])
 
     function getTextDy(node){
-        if (node.group == 'basestone'){
-            textDyScale.domain([0, biggestNode])
-            textdy = textDyScale(node.frequency);
-            return `-${textdy}rem`;
-        }
-           
-        else if (node.group == 'stellar'){
-            return '0.35rem';
-        }
+        return '0.45rem'
     }
 
     function getTextFontSize(node){
-        var interpolator = d3.interpolateNumber(7,50);
-        return interpolator(node.frequency/biggestNode)
+        if (node.level == 'article'){
+            var interpolator = d3.interpolateNumber(7,20);
+            return interpolator(node.connection/biggestNode_article)
+        }
+        else {
+            var interpolator = d3.interpolateNumber(7,30);
+            return interpolator(node.connection/biggestNode_keyword)
+        }
+        
     }
 
     function getTextFontWeight(node){
-        if (node.frequency/biggestNode > 0.8){
-            return 900
+        if (node.level == 'article'){
+            totalkeywordNum = parseInt(node.basestoneNum) + parseInt(node.stellarNum)
+            if (totalkeywordNum/biggestNode_article > 0.8){
+                return 900
+            }
+            else if (0.8 > totalkeywordNum/biggestNode_article > 0.5){
+                return 700
+            }   
+            else if (totalkeywordNum/biggestNode_article < 0.5){
+                return 300
+            }
         }
-        else if ( 0.8 > node.frequency/biggestNode > 0.5){
-            return 700
+        else {
+            if (node.connection/biggestNode_keyword > 0.8){
+                return 900
+            }
+            else if (0.8 > node.connection/biggestNode_keyword > 0.5){
+                return 700
+            }   
+            else if (node.connection/biggestNode_keyword < 0.5){
+                return 300
+            }
         }
-        else if (node.frequency/biggestNode < 0.5){
-            return 300
-        }
+        
     }
 
     function getNodeRadius(node){
@@ -258,10 +295,10 @@
         var interpolatorForTags = d3.interpolateNumber(2 ,50);
         if (d.level == 'article'){
             totalkeywordNum = parseInt(d.basestoneNum) + parseInt(d.stellarNum)
-            return interpolatorForArticles(totalkeywordNum/biggestNode)
+            return interpolatorForArticles(totalkeywordNum/biggestNode_article)
         }
         else if (d.level == 'stellar'|| d.level == 'basestone'){
-            return interpolatorForTags(d.connection/biggestTag)
+            return interpolatorForTags(d.connection/biggestNode_keyword)
         }
     }
 
