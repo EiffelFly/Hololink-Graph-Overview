@@ -49,7 +49,14 @@
         if (error) throw error;
 
         calculateBiggestNum()
-        console.log(biggestNode)
+        
+        //Set up scale for forceX an Y
+        var strengthScale = d3.scalePow()
+            .exponent(2)
+            .range([0, 0.5])
+            .domain([0, d3.max(graph.nodes, function(d) {
+                return d.frequency;
+            })]);
 
         var linkElements = g.append("g")
                 .attr("class", "links")
@@ -104,6 +111,27 @@
                 .attr("cx", function(d) { return d.x; })
                 .attr("cy", function(d) { return d.y; });
         }
+
+        // Re-define x,y force strength to make bigger node at center
+        // And besides that, we make basestone at center and basestone at outer ring
+        var XForce = simulation.force("x");
+        var YForce = simulation.force("y");
+
+        XForce.strength(function(d){
+            if (d.level != 'article'){
+                if (d.connection >= 2){
+                    return strengthScale(d.frequency) + 3
+                }
+            }
+        });
+
+        YForce.strength(function(d){
+            if (d.level != 'article'){
+                if (d.connection >= 2){
+                    return strengthScale(d.frequency) + 3
+                }
+            }
+        });
 
         //Implement FADE IN and OUT EFFECT ------------
 
