@@ -24,12 +24,14 @@
     //Second step: set up simulation and force
     var simulation = d3.forceSimulation()
         .force("charge_force", d3.forceManyBody().strength(-300))
+        .force("x", d3.forceX(width / 2))
+        .force("y", d3.forceY(height / 2))
         //.force("center_force", d3.forceCenter(width / 2, height / 2))
         .force("link", d3.forceLink()
             .id(function(d){return d.id})
             .distance(100))
         .force('Radial_force', d3.forceRadial(getNodeRadius, width/2, height/2)
-            .strength(getNodeRadiusStrength)
+            .strength(1)
         )
         .force(
             "collision",
@@ -49,14 +51,6 @@
         if (error) throw error;
 
         calculateBiggestNum()
-        
-        //Set up scale for forceX an Y
-        var strengthScale = d3.scalePow()
-            .exponent(2)
-            .range([0, 0.5])
-            .domain([0, d3.max(graph.nodes, function(d) {
-                return d.frequency;
-            })]);
 
         var linkElements = g.append("g")
                 .attr("class", "links")
@@ -112,27 +106,6 @@
                 .attr("cy", function(d) { return d.y; });
         }
 
-        // Re-define x,y force strength to make bigger node at center
-        // And besides that, we make basestone at center and basestone at outer ring
-        var XForce = simulation.force("x");
-        var YForce = simulation.force("y");
-
-        XForce.strength(function(d){
-            if (d.level != 'article'){
-                if (d.connection >= 2){
-                    return strengthScale(d.frequency) + 3
-                }
-            }
-        });
-
-        YForce.strength(function(d){
-            if (d.level != 'article'){
-                if (d.connection >= 2){
-                    return strengthScale(d.frequency) + 3
-                }
-            }
-        });
-
         //Implement FADE IN and OUT EFFECT ------------
 
         function fade(opacity){
@@ -180,6 +153,48 @@
                 }
             });     
         };
+
+        //Set up scale for forceX an Y
+        var strengthScale = d3.scalePow()
+            .exponent(2)
+            .range([0, 0.5])
+            .domain([0, d3.max(graph.nodes, function(d) {
+                return d.connection;
+            })]);
+
+        // Re-define x,y force strength to make bigger node at center
+        // And besides that, we make basestone at center and basestone at outer ring
+        var XForce = simulation.force("x");
+        var YForce = simulation.force("y");
+
+        XForce.strength(function(d){
+            if (d.level != 'article'){
+                if (d.connection >= 2){
+                    return strengthScale(d.connection) + 0.4
+                }
+                else{
+                    return 0
+                }
+            }
+            else {
+                return 0
+            }
+        });
+
+        YForce.strength(function(d){
+            if (d.level != 'article'){
+                if (d.connection >= 2){
+                    return strengthScale(d.connection) + 0.4
+                }
+                else{
+                    return 0
+                }
+            }
+            else{
+                return 0
+            }
+        });
+
     });
 
     //Sixth step: add zoom capability
@@ -190,31 +205,50 @@
 
     //FUNCTIONS
 
-    
+    //Set up scale for Text and NERText Dy
+    var textDyScale = d3.scalePow()
+            .exponent(2)
+            .range([0.5, 2])
 
-    function getNodeRadiusStrength(d){
-        if (d.level == 'tag' && d.connection>=2){
-            return 1
+    function getTextDy(node){
+        if (node.group == 'basestone'){
+            textDyScale.domain([0, biggestNode])
+            textdy = textDyScale(node.frequency);
+            return `-${textdy}rem`;
         }
-        else if (d.level == 'tag' && d.connection<2){
-            return 1
+           
+        else if (node.group == 'stellar'){
+            return '0.35rem';
         }
-        else if (d.level == 'article'){
-            return 1
-        }
-        else { return 1}
     }
 
-    function getNodeRadius(d){
-        if (d.level == 'stellar' || d.level == 'basestone'){
-            if (d.connection >= 2){
+    function getTextFontSize(node){
+        var interpolator = d3.interpolateNumber(7,50);
+        return interpolator(node.frequency/biggestNode)
+    }
+
+    function getTextFontWeight(node){
+        if (node.frequency/biggestNode > 0.8){
+            return 900
+        }
+        else if ( 0.8 > node.frequency/biggestNode > 0.5){
+            return 700
+        }
+        else if (node.frequency/biggestNode < 0.5){
+            return 300
+        }
+    }
+
+    function getNodeRadius(node){
+        if (node.level == 'stellar' || node.level == 'basestone'){
+            if (node.connection >= 2){
                 return 100
             }
             else {
                 return 700
             }
         }
-        else if (d.level == 'article'){
+        else if (node.level == 'article'){
             return 500
         }
     }
