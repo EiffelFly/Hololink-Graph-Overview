@@ -31,6 +31,16 @@
         .force('Radial_force', d3.forceRadial(getNodeRadius, width/2, height/2)
             .strength(getNodeRadiusStrength)
         )
+        .force(
+            "collision",
+            d3
+                .forceCollide()
+                .radius(function(d){
+                    radius = getNodeSize(d)
+                    return radius + 2
+                })
+                .strength(1)
+        );
         
 
     //Third step: LOAD DATA and create nodes/links element
