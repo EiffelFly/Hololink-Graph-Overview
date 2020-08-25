@@ -4,7 +4,7 @@
 
 </style>
 
-<svg width="960" height="960"></svg>
+<svg width="2400" height="1600"></svg>
 <script src="https://d3js.org/d3.v4.min.js"></script>
 <script src="https://d3js.org/d3-interpolate.v1.min.js"></script>
 <script>
@@ -87,12 +87,12 @@
                             }
                         })
                         .attr('text-anchor', 'middle')
-                        //.attr('font-family', "'Noto Sans TC', sans-serif")
+                        .attr('font-family', "'Noto Sans TC', sans-serif")
                         .attr('font-weight', getTextFontWeight)
-                        .attr('dx', 0)
-                        .attr('dy', getTextDy)
                         .attr('font-size', getTextFontSize)
                         .style('fill', 'black')
+                        .each(wrap)
+                        
 
         nodeElements.append("title")
             .text(function(d) { return d.id; });
@@ -126,7 +126,7 @@
 
             textElements
                 .attr("x", node => node.x)
-                .attr("y", node => node.y);
+                .attr("y", node => node.y + 5);
         }
 
         //Implement FADE IN and OUT EFFECT ------------
@@ -228,6 +228,33 @@
 
     //FUNCTIONS
 
+
+    //Wrapping text
+    function wrap(d) {
+        var text = d3.select(this),
+            width = getNodeSize(d),
+            x = d.x,
+            y = d.y,
+            words = text.text().split(/\s+/).reverse(),
+            word,
+            line = [],
+            lineNumber = 0,
+            lineHeight = 0.5,
+            tspan = text.text(null).append("tspan").attr("x", x).attr("y", y);
+
+        while (word = words.pop()) {
+            line.push(word);
+            tspan.text(line.join(" "));
+            console.log(line)
+            if (tspan.node().getComputedTextLength() > width) {
+                line.pop();
+                tspan.text(line.join(" "));
+                line = [word];
+                tspan = text.append("tspan").attr("x", x).attr("y", y).attr("dy", ++lineNumber * lineHeight + "em").text(word);
+            }
+        };
+    };
+
     //Set up scale for Text and NERText Dy
     var textDyScale = d3.scalePow()
             .exponent(2)
@@ -253,10 +280,10 @@
         if (node.level == 'article'){
             totalkeywordNum = parseInt(node.basestoneNum) + parseInt(node.stellarNum)
             if (totalkeywordNum/biggestNode_article > 0.8){
-                return 900
+                return 700
             }
             else if (0.8 > totalkeywordNum/biggestNode_article > 0.5){
-                return 700
+                return 500
             }   
             else if (totalkeywordNum/biggestNode_article < 0.5){
                 return 300
@@ -264,10 +291,10 @@
         }
         else {
             if (node.connection/biggestNode_keyword > 0.8){
-                return 900
+                return 700
             }
             else if (0.8 > node.connection/biggestNode_keyword > 0.5){
-                return 700
+                return 500
             }   
             else if (node.connection/biggestNode_keyword < 0.5){
                 return 300

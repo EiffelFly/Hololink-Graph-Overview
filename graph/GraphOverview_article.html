@@ -68,7 +68,7 @@
                     .attr("fill", getNodeColor)
                     .style("stroke", "grey")
 
-        var testElements = g.append("g")
+        var textElements = g.append("g")
             .attr("class", "text")
                 .selectAll("text")
                     .data(graph.nodes)
@@ -83,7 +83,7 @@
                         .attr('font-size', getTextFontSize)
                         .style('fill', 'black')
 
-        var NERtestElements = g.append("g")
+        var NERtextElements = g.append("g")
             .attr("class", "text")
                 .selectAll("text")
                     .data(graph.nodes)
@@ -137,11 +137,11 @@
                 .attr("cx", function(d) { return d.x; })
                 .attr("cy", function(d) { return d.y; });
 
-            testElements
+            textElements
                 .attr("x", node => node.x)
                 .attr("y", node => node.y);
 
-            NERtestElements
+            NERtextElements
                 .attr("x", node => node.x)
                 .attr("y", node => node.y);
         }
