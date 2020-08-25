@@ -78,14 +78,13 @@
         var textElements = g.append("g")
             .attr("class", "text")
                 .selectAll("text")
-                    .data(graph.nodes)
+                    .data(graph.nodes) //我在這裡輸入了所有的 graph nodes 但我在下面的 text 卻限制了一定條件才放入 text，因此多了很多空的 text element                    
                         .enter()
-                        .append('text')
-                        .text( node => {
-                            if (node.connection >= 2 || node.level == 'article'){
-                                return node.id
-                            }
+                        .filter(function(d){
+                            return d.connection >= 2 || d.level == 'article'
                         })
+                        .append('text')
+                        .text(node => node.id)
                         .attr('text-anchor', 'middle')
                         .attr('font-family', "'Noto Sans TC', sans-serif")
                         .attr('font-weight', getTextFontWeight)
@@ -126,7 +125,8 @@
 
             textElements
                 .attr("x", node => node.x)
-                .attr("y", node => node.y + 5);
+                .attr("y", node => node.y)
+                
         }
 
         //Implement FADE IN and OUT EFFECT ------------
@@ -231,28 +231,33 @@
 
     //Wrapping text
     function wrap(d) {
-        var text = d3.select(this),
-            width = getNodeSize(d),
-            x = d.x,
-            y = d.y,
-            words = text.text().split(/\s+/).reverse(),
-            word,
-            line = [],
-            lineNumber = 0,
-            lineHeight = 0.5,
-            tspan = text.text(null).append("tspan").attr("x", x).attr("y", y);
+        if (d.connection >= 2 || d.level == 'article'){
+            var text = d3.select(this),
+                width = getNodeSize(d),
+                words = text.text().split("").reverse(),
+                word,
+                x = text.node().getBBox(),
+                y = text.node().getBBox(),
+                line = [],
+                lineNumber = 0,
+                lineHeight = 1.1,
+                tspan = text.text(null).append("tspan").attr("x", x).attr("y", y);
+                console.log(text.node(), x)
 
-        while (word = words.pop()) {
-            line.push(word);
-            tspan.text(line.join(" "));
-            console.log(line)
-            if (tspan.node().getComputedTextLength() > width) {
-                line.pop();
-                tspan.text(line.join(" "));
-                line = [word];
-                tspan = text.append("tspan").attr("x", x).attr("y", y).attr("dy", ++lineNumber * lineHeight + "em").text(word);
-            }
-        };
+            while (word = words.pop()) {
+                line.push(word);
+                tspan.text(line.join(""));
+                //console.log(word, tspan.node().getComputedTextLength(), x,y)
+                
+                if (tspan.node().getComputedTextLength() > width) {
+                    line.pop();
+                    tspan.text(line.join(""));
+                    line = [word];
+                    tspan = text.append("tspan").attr("x", x).attr("y", y).attr("dy", ++lineNumber * lineHeight + "em").text(word);
+                }
+            };                    
+        }
+        
     };
 
     //Set up scale for Text and NERText Dy
