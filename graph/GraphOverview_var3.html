@@ -35,6 +35,14 @@
             console.log(error);
         }
 
+        //Fourth step: activate simulation and tick
+        simulation
+            .nodes(graph.nodes)
+            .on("tick", tickActions);
+
+        simulation.force("link")
+            .links(graph.links)
+
         var linkElements = g.append("g")
                 .attr("class", "links")
             .selectAll("line") //select svg-line element and use D3.data method
@@ -51,18 +59,15 @@
                 .enter()
                 .append("circle")
                 .attr("r", 4)
+                .attr('ss', function(d){
+                    console.log(d)
+                })
                 .attr("fill", getNodeColor)
 
         nodeElements.append("title")
             .text(function(d) { return d.id; });
 
-        //Fourth step: activate simulation and tick
-        simulation
-            .nodes(graph.nodes)
-            .on("tick", tickActions);
-
-        simulation.force("link")
-            .links(graph.links)
+        
 
         //Fifth step: add drag capability
         var drag_handler = d3.drag()

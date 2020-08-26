@@ -59,6 +59,9 @@
                 .append("circle")
                 .attr("r", getNodeSize)
                 .attr("fill", getNodeColor)
+                .attr('ss', function(d){
+                    console.log(d)
+                })
                 .style("stroke", getLinkColor); 
 
         nodeElements.append("title")
