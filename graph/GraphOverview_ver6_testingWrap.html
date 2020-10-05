@@ -52,14 +52,6 @@
 
         calculateBiggestNum()
 
-        //Fourth step: activate simulation and tick function
-        simulation
-            .nodes(graph.nodes)
-            .on("tick", tickActions);
-
-        simulation.force("link")
-            .links(graph.links)
-
         var linkElements = g.append("g")
                 .attr("class", "links")
             .selectAll("line") //select svg-line element and use D3.data method
@@ -71,37 +63,29 @@
                     .style('stroke-opacity', 0.5); 
 
         var nodeElements = g.append("g")
-                .attr("class", "nodes")         
-            .selectAll("circle")
-                .data(graph.nodes)
-                .enter()
-                .append("circle")
-                .attr("r", getNodeSize)
-                .attr("fill", getNodeColor)
-                .style("stroke", getLinkColor)
+            .attr("class", "nodes")   
+
+        nodeElements.append('circle')   
+            .data(graph.nodes)
+            .enter()
+            .attr("r", getNodeSize)
+            .attr("fill", getNodeColor)
+            .style("stroke", getLinkColor)
             .on('mouseover.fade', fade(0.2))
-  	        .on('mouseout.fade', fade(1));
+            .on('mouseout.fade', fade(1))
 
-        var textElements = g.append("g")
-            .attr("class", "text")
-                .selectAll("text")
-                    .data(graph.nodes) //我在這裡輸入了所有的 graph nodes 但我在下面的 text 卻限制了一定條件才放入 text，因此多了很多空的 text element                    
-                        .enter()
-                        .filter(function(d){
-                            return d.connection >= 2 || d.level == 'article'
-                        })
-                        .append('text')
-                        .text(node => node.id)
-                        .attr('text-anchor', 'middle')
-                        .attr('font-family', "'Noto Sans TC', sans-serif")
-                        .attr('font-weight', getTextFontWeight)
-                        .attr('font-size', getTextFontSize)
-                        .style('fill', 'black')
-                        .each(wrap)
-                        
+        nodeElements.append("text")
+            .data(graph.nodes)
+            .enter()
+            .text( function(d){d.id})
+            .attr('text-anchor', 'middle')
+            .attr('font-family', "'Noto Sans TC', sans-serif")
+            .attr('font-weight', getTextFontWeight)
+            .attr('font-size', getTextFontSize)
+            .style('fill', 'black')
+        
 
-        nodeElements.append("title")
-            .text(function(d) { return d.id; });
+        console.log(label)
 
         //Fifth step: add drag capability
         var drag_handler = d3.drag()
@@ -110,7 +94,15 @@
             .on("end", drag_end);	
 
         drag_handler(nodeElements);
-            
+
+        //Fourth step: activate simulation and tick function
+        simulation
+            .nodes(graph.nodes)
+            .on("tick", tickActions);
+
+        simulation.force("link")
+            .links(graph.links)
+
         function tickActions(){
             linkElements
                 .attr("x1", function(d) { return d.source.x; })
@@ -120,12 +112,7 @@
 
             nodeElements
                 .attr("cx", function(d) { return d.x; })
-                .attr("cy", function(d) { return d.y; })
-
-            textElements
-                .attr("x", node => node.x)
-                .attr("y", node => node.y)
-                
+                .attr("cy", function(d) { return d.y; }) 
         }
 
         //Implement FADE IN and OUT EFFECT ------------
@@ -231,7 +218,8 @@
                     lineNumber = 0,
                     lineHeight = 1.1,
                     tspan = text.text(null).append("tspan").attr("x", x).attr("y", y);
-                    console.log(node)
+                    
+                console.log(d3.keys(d), d.cx)
 
                 while (word = words.pop()) {
                     line.push(word);
