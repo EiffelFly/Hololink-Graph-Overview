@@ -74,17 +74,17 @@
             .on('mouseover.fade', fade(0.2))
             .on('mouseout.fade', fade(1));
 
-        var textElements = g.append("foreignObject")
+        var textElements = g.append("g")
             .attr("class", "text")
-                .selectAll("text")
-                    .data(graph.nodes)                   
+                .selectAll("foreignObject")
+                .data(graph.nodes)                   
                 .enter()
                 .filter(function(d){
                     return d.connection >= 2 || d.level == 'article'
                 })
-                    .append('text')
-                    .attr('width', getNodeSize)
-                    .attr('height', getNodeSize)
+                    .append('foreignObject')
+                    .style('width', 100)
+                    .style('height', 100)
                     .text(node => node.id)
                     .attr('text-anchor', 'middle')
                     .attr('font-family', "'Noto Sans TC', sans-serif")
@@ -126,9 +126,16 @@
                 .attr("cy", function(d) { return d.y; });
 
             textElements
-                .attr("x", function(d) { return d.x; })
-                .attr("y", function(d) { return d.y; });
-
+                .attr("x", function(d) { 
+                    nodeR = getNodeSize(d);
+                    dx = nodeR * 0.5
+                    return d.x - dx; 
+                })
+                .attr("y", function(d) { 
+                    nodeR = getNodeSize(d);
+                    dy = nodeR * 0.5
+                    return d.y - dy; 
+                });
                 
         }
 
@@ -225,7 +232,6 @@
         function wrap(text, width) {
             text.each(function() {
                 var text = d3.select(this),
-                console.log(test)
                     words = text.text().split(/\s+/).reverse(),
                     word,
                     line = [],
