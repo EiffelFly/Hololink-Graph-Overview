@@ -83,8 +83,8 @@
                     return d.connection >= 2 || d.level == 'article'
                 })
                     .append('foreignObject')
-                    .style('width', 100)
-                    .style('height', 100)
+                    .style('width', getTextWrapperSpace)
+                    .style('height', getTextWrapperSpace)
                     .text(node => node.id)
                     .attr('text-anchor', 'middle')
                     .attr('font-family', "'Noto Sans TC', sans-serif")
@@ -128,8 +128,15 @@
             textElements
                 .attr("x", function(d) { 
                     nodeR = getNodeSize(d);
-                    dx = nodeR * 0.5
-                    return d.x - dx; 
+                    if (d.level == 'article'){
+                        dx = nodeR * 0.8
+                        x = d.x - dx
+                    }
+                    else {
+                        dx = nodeR * 0.6
+                        x = d.x - dx
+                    }
+                    return x 
                 })
                 .attr("y", function(d) { 
                     nodeR = getNodeSize(d);
@@ -272,13 +279,18 @@
         return '0.45rem'
     }
 
+    function getTextWrapperSpace(node){
+        nodeR = getNodeSize(node)
+        return nodeR * 0.8 * 2
+    }
+
     function getTextFontSize(node){
         if (node.level == 'article'){
-            var interpolator = d3.interpolateNumber(4,20);
+            var interpolator = d3.interpolateNumber(4,12);
             return interpolator(node.connection/biggestNode_article)
         }
         else {
-            var interpolator = d3.interpolateNumber(4,30);
+            var interpolator = d3.interpolateNumber(4,20);
             return interpolator(node.connection/biggestNode_keyword)
         }
         
