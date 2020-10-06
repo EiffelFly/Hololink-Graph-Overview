@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <meta charset="utf-8">
 <style>
-
+    
 </style>
 
 <svg width="2400" height="1600"></svg>
@@ -29,7 +29,7 @@
         //.force("center_force", d3.forceCenter(width / 2, height / 2))
         .force("link", d3.forceLink()
             .id(function(d){return d.id})
-            .distance(200))
+            .distance(400))
         .force('Radial_force', d3.forceRadial(getNodeOrbit, width/2, height/2)
             .strength(1)
         )
@@ -87,16 +87,18 @@
                     .style('height', getTextWrapperSpace)
         
         var textElements = textContainer.append('xhtml:text')
+            .text(node => node.id)
             .style('display', 'flex')
             .style('width', '100%')
             .style('height', '100%')
             .style('justify-content', 'center')
             .style('align-items','center')
-            .text(node => node.id)
             .style('font-family', "'Noto Sans TC', sans-serif")
             .style('font-weight', getTextFontWeight)
             .style('font-size', getTextFontSize)
             .style('fill', 'black')
+            
+            
                     
 
         //Fourth step: activate simulation and tick function
@@ -136,56 +138,14 @@
             textContainer
                 .attr("x", function(d) { 
                     nodeR = getNodeSize(d);
-                    if (d.level == 'article'){
-                        dx = nodeR * 0.8
-                        x = d.x - dx
-                    }
-                    else {
-                        dx = nodeR * 0.6
-                        x = d.x - dx
-                    }
+                    x = d.x - nodeR/Math.sqrt(2)
                     return x 
                 })
                 .attr("y", function(d) { 
                     nodeR = getNodeSize(d);
-                    if (d.level == 'article'){
-                        dy = nodeR * 0.8
-                        y = d.y - dy
-                    }
-                    else { 
-                        dy = nodeR * 0.2
-                        y = d.y - dy
-                    }
+                    y = d.y - nodeR/Math.sqrt(2)
                     return y 
-                });
-
-            textElements
-                .attr("x", function(d) { 
-                    nodeR = getNodeSize(d);
-                    if (d.level == 'article'){
-                        dx = nodeR * 0.8
-                        x = d.x - dx
-                    }
-                    else {
-                        dx = nodeR * 0.6
-                        x = d.x - dx
-                    }
-                    return x 
-                })
-                .attr("y", function(d) { 
-                    nodeR = getNodeSize(d);
-                    if (d.level == 'article'){
-                        dy = nodeR * 0.8
-                        y = d.y - dy
-                    }
-                    else { 
-                        dy = nodeR * 0.2
-                        y = d.y - dy
-                    }
-                    return y 
-                });
-
-                
+                });                
         }
 
         //Implement FADE IN and OUT EFFECT ------------
@@ -302,11 +262,15 @@
 
     function getTextFontSize(node){
         if (node.level == 'article'){
-            var interpolator = d3.interpolateNumber(4,12);
-            return interpolator(node.connection/biggestNode_article)
+            console.log(node)
+            var interpolator = d3.interpolateNumber(12,20);
+            articleTotalKeyword = parseInt(node.stellarNum) + parseInt(node.basestoneNum)
+            fontSize = interpolator(articleTotalKeyword/biggestNode_article) + 'px'
+            console.log(fontSize)
+            return fontSize
         }
         else {
-            var interpolator = d3.interpolateNumber(4,30);
+            var interpolator = d3.interpolateNumber(12,50);
             return interpolator(node.connection/biggestNode_keyword)
         }
         
@@ -345,7 +309,7 @@
                 return 100
             }
             else {
-                return 700
+                return 1000
             }
         }
         else if (node.level == 'article'){
@@ -355,8 +319,8 @@
 
     function getNodeSize(d){
         //console.log(d)
-        var interpolatorForArticles = d3.interpolateNumber(20,100);
-        var interpolatorForTags = d3.interpolateNumber(2 ,80);
+        var interpolatorForArticles = d3.interpolateNumber(50,150);
+        var interpolatorForTags = d3.interpolateNumber(8, 60);
         if (d.level == 'article'){
             totalkeywordNum = parseInt(d.basestoneNum) + parseInt(d.stellarNum)
             return interpolatorForArticles(totalkeywordNum/biggestNode_article)
