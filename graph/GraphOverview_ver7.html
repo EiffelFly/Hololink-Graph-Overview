@@ -29,8 +29,8 @@
         //.force("center_force", d3.forceCenter(width / 2, height / 2))
         .force("link", d3.forceLink()
             .id(function(d){return d.id})
-            .distance(100))
-        .force('Radial_force', d3.forceRadial(getNodeRadius, width/2, height/2)
+            .distance(200))
+        .force('Radial_force', d3.forceRadial(getNodeOrbit, width/2, height/2)
             .strength(1)
         )
         .force(
@@ -39,7 +39,7 @@
                 .forceCollide()
                 .radius(function(d){
                     radius = getNodeSize(d)
-                    return radius + 2
+                    return radius + 3
                 })
                 .strength(1)
         );
@@ -74,7 +74,7 @@
             .on('mouseover.fade', fade(0.2))
             .on('mouseout.fade', fade(1));
 
-        var textElements = g.append("g")
+        var textContainer = g.append("g")
             .attr("class", "text")
                 .selectAll("foreignObject")
                 .data(graph.nodes)                   
@@ -85,17 +85,25 @@
                     .append('foreignObject')
                     .style('width', getTextWrapperSpace)
                     .style('height', getTextWrapperSpace)
-                    .text(node => node.id)
-                    .attr('text-anchor', 'middle')
-                    .attr('font-family', "'Noto Sans TC', sans-serif")
-                    .attr('font-weight', getTextFontWeight)
-                    .attr('font-size', getTextFontSize)
-                    .style('fill', 'black')
+        
+        var textElements = textContainer.append('xhtml:text')
+            .style('display', 'flex')
+            .style('width', '100%')
+            .style('height', '100%')
+            .style('justify-content', 'center')
+            .style('align-items','center')
+            .text(node => node.id)
+            .style('font-family', "'Noto Sans TC', sans-serif")
+            .style('font-weight', getTextFontWeight)
+            .style('font-size', getTextFontSize)
+            .style('fill', 'black')
                     
 
         //Fourth step: activate simulation and tick function
         simulation
             .nodes(graph.nodes)
+            //.alphaMin(0.01)
+            .alphaDecay(0.05)
             .on("tick", tickActions)
 
         simulation.force("link")
@@ -125,6 +133,32 @@
                 .attr("cx", function(d) { return d.x; })
                 .attr("cy", function(d) { return d.y; });
 
+            textContainer
+                .attr("x", function(d) { 
+                    nodeR = getNodeSize(d);
+                    if (d.level == 'article'){
+                        dx = nodeR * 0.8
+                        x = d.x - dx
+                    }
+                    else {
+                        dx = nodeR * 0.6
+                        x = d.x - dx
+                    }
+                    return x 
+                })
+                .attr("y", function(d) { 
+                    nodeR = getNodeSize(d);
+                    if (d.level == 'article'){
+                        dy = nodeR * 0.8
+                        y = d.y - dy
+                    }
+                    else { 
+                        dy = nodeR * 0.2
+                        y = d.y - dy
+                    }
+                    return y 
+                });
+
             textElements
                 .attr("x", function(d) { 
                     nodeR = getNodeSize(d);
@@ -140,9 +174,17 @@
                 })
                 .attr("y", function(d) { 
                     nodeR = getNodeSize(d);
-                    dy = nodeR * 0.5
-                    return d.y - dy; 
+                    if (d.level == 'article'){
+                        dy = nodeR * 0.8
+                        y = d.y - dy
+                    }
+                    else { 
+                        dy = nodeR * 0.2
+                        y = d.y - dy
+                    }
+                    return y 
                 });
+
                 
         }
 
@@ -234,32 +276,6 @@
                 return 0
             }
         });
-
-        //Wrapping text
-        function wrap(text, width) {
-            text.each(function() {
-                var text = d3.select(this),
-                    words = text.text().split(/\s+/).reverse(),
-                    word,
-                    line = [],
-                    lineNumber = 0,
-                    lineHeight = 1.1, // ems
-                    y = text.attr("y"),
-                    dy = parseFloat(text.attr("dy")),
-                    tspan = text.text(null).append("tspan").attr("x", 0).attr("y", y).attr("dy", dy + "em");
-                while (word = words.pop()) {
-                line.push(word);
-                tspan.text(line.join(" "));
-                if (tspan.node().getComputedTextLength() > width) {
-                    line.pop();
-                    tspan.text(line.join(" "));
-                    line = [word];
-                    tspan = text.append("tspan").attr("x", 0).attr("y", y).attr("dy", ++lineNumber * lineHeight + dy + "em").text(word);
-                }
-                }
-            });
-        }
-
     });
 
     //Sixth step: add zoom capability
@@ -281,7 +297,7 @@
 
     function getTextWrapperSpace(node){
         nodeR = getNodeSize(node)
-        return nodeR * 0.8 * 2
+        return nodeR * 0.7 * 2
     }
 
     function getTextFontSize(node){
@@ -290,7 +306,7 @@
             return interpolator(node.connection/biggestNode_article)
         }
         else {
-            var interpolator = d3.interpolateNumber(4,20);
+            var interpolator = d3.interpolateNumber(4,30);
             return interpolator(node.connection/biggestNode_keyword)
         }
         
@@ -323,7 +339,7 @@
         
     }
 
-    function getNodeRadius(node){
+    function getNodeOrbit(node){
         if (node.level == 'stellar' || node.level == 'basestone'){
             if (node.connection >= 2){
                 return 100
@@ -339,8 +355,8 @@
 
     function getNodeSize(d){
         //console.log(d)
-        var interpolatorForArticles = d3.interpolateNumber(20,70);
-        var interpolatorForTags = d3.interpolateNumber(2 ,50);
+        var interpolatorForArticles = d3.interpolateNumber(20,100);
+        var interpolatorForTags = d3.interpolateNumber(2 ,80);
         if (d.level == 'article'){
             totalkeywordNum = parseInt(d.basestoneNum) + parseInt(d.stellarNum)
             return interpolatorForArticles(totalkeywordNum/biggestNode_article)
